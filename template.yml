@@ -1,0 +1,20 @@
+Description: EC2 Instance for CD Jobs
+
+Resources:
+  InstanceSecGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable ssh access over port 22
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+    
+  EC2:
+    Type: AWS::EC2::Instance
+    Properties:
+      KeyName: cicd
+      ImageId: ami-052efd3df9dad4825
+      InstanceType: t2.micro
+      SecurityGroups: !Ref InstanceSecGroup
