@@ -2,18 +2,14 @@
 # See: https://circleci.com/docs/2.0/configuration-reference
 version: 2.1
 
-executors:
-  cloud-exec:
-    docker:
-      - image: amazon/aws-cli
-
 # Define a job to be invoked later in a workflow.
 # See: https://circleci.com/docs/2.0/configuration-reference/#jobs
 jobs:
   create_infrastructure:
     # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
     # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
-    executor: cloud-exec
+    docker:
+      - image: amazon/aws-cli
     # Add steps to the job
     # See: https://circleci.com/docs/2.0/configuration-reference/#steps
     steps:
@@ -29,21 +25,22 @@ jobs:
             --template-file template.yml \
             --stack-name myStack-${CIRCLE_WORKFLOW_ID:0:5} \
             --region us-east-1
-      - run: echo "[all]" > inventory.txt
+      - run: echo "[all]" > host
       - run:
           name: "Retrieve Host Public Ip"
           command: |
             aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress[*]' \
-            --output text >> inventory.txt
+            --output text >> host
+      - run: cat host
       - persist_to_workspace:
           root: .
           paths:
-            - inventory.txt
+            - host
     
 
   configure_infrastructure:
     docker:
-      - image: cimg/python:3.10.4
+      - image: python:3.7-alpine3.11
     steps:
       - checkout
       - attach_workspace:
@@ -53,11 +50,11 @@ jobs:
       - run:
           name: Install dependencies
           command: | 
-            pip install --user ansible
+            apk add --update ansible
       - run:
           name: Configure the servers
           command: |
-            ansible-playbook -i ./inventory.txt main-remote.yml
+            ansible-playbook -i ./host main-remote.yml
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
