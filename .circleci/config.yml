@@ -6,7 +6,6 @@ executors:
   cloud-exec:
     docker:
       - image: amazon/aws-cli
-    working_directory: /tmp
 
 # Define a job to be invoked later in a workflow.
 # See: https://circleci.com/docs/2.0/configuration-reference/#jobs
@@ -44,7 +43,7 @@ jobs:
     steps:
       - checkout
       - attach_workspace:
-          at: /tmp/workspace
+          at: workspace
       - add_ssh_keys:
           fingerprints: ["06:41:67:ae:de:8c:36:7d:51:79:3c:47:38:01:0f:05"]
       - run:
@@ -54,7 +53,7 @@ jobs:
       - run:
           name: Configure the servers
           command: |
-            ansible-playbook -i /tmp/workspace/inventory main-remote.yml
+            ansible-playbook -i workspace/inventory main-remote.yml
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
