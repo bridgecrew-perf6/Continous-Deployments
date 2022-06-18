@@ -76,7 +76,8 @@ jobs:
           command: |
             return 1 #Simulates an error that causes job failure
       - destroy_environment:
-          when: on_fail
+          when: 
+            - on_fail
 
 
 
