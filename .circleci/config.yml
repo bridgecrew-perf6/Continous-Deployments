@@ -25,14 +25,14 @@ jobs:
             --template-file template.yml \
             --stack-name myStack-${CIRCLE_WORKFLOW_ID:0:5} \
             --region us-east-1
-      - run: echo "[all]" > workspace/inventory.txt
+      - run: echo "[all]" > inventory.txt
       - run:
           name: "Retrieve Host Public Ip"
           command: |
             aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress[*]' \
-            --output text >> workspace/inventory.txt
+            --output text >> inventory.txt
       - persist_to_workspace:
-          root: workspace
+          root: ~/
           paths:
             - inventory.txt
     
