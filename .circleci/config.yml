@@ -2,14 +2,19 @@
 # See: https://circleci.com/docs/2.0/configuration-reference
 version: 2.1
 
+executors:
+  cloud-exec:
+    docker:
+      - image: amazon/aws-cli
+    working_directory: /tmp
+
 # Define a job to be invoked later in a workflow.
 # See: https://circleci.com/docs/2.0/configuration-reference/#jobs
 jobs:
   create_infrastructure:
     # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
     # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
-    docker:
-      - image: amazon/aws-cli
+    executor: cloud-exec
     # Add steps to the job
     # See: https://circleci.com/docs/2.0/configuration-reference/#steps
     steps:
@@ -21,6 +26,35 @@ jobs:
             --template-file template.yml \
             --stack-name myStack-${CIRCLE_WORKFLOW_ID:0:5} \
             --region us-east-1
+      - run: echo "[all]" > workspace/inventory.txt
+      - run:
+          name: "Retrieve Host Public Ip"
+          command: |
+            aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress[*]' \
+            --output text >> workspace/inventory.txt
+      - persist_to_workspace:
+          root: workspace
+          paths:
+            - inventory.txt
+    
+
+  configure_infrastructure:
+    docker:
+      - image: cimg/python:3.10.4
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /tmp/workspace
+      - add_ssh_keys:
+          fingerprints: ["06:41:67:ae:de:8c:36:7d:51:79:3c:47:38:01:0f:05"]
+      - run:
+          name: Install dependencies
+          command: | 
+            pip install --user ansible
+      - run:
+          name: Configure the servers
+          command: |
+            ansible-playbook -i /tmp/workspace/inventory main-remote.yml
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
@@ -28,3 +62,5 @@ workflows:
   say-hello-workflow:
     jobs:
       - create_infrastructure
+      - configure_infrastructure:
+          requires: [create_inrastructure]
