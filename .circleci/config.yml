@@ -55,11 +55,32 @@ jobs:
           command: |
             ansible-playbook -i ./host main-remote.yml
 
+
+  smoke_test:
+    docker:
+      - image: alpine:latest
+    
+    steps:
+      - run: apk add --update curl
+      - run:
+          name: Smoke Test
+          command: |
+            URL="https://blog.udacity.com/"
+            if curl -s --head ${URL}
+            then
+              return 0
+            else
+              return 1
+            fi
+
+
+
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
   config-deploy-workflow:
     jobs:
-      - create_infrastructure
-      - configure_infrastructure:
-          requires: [create_infrastructure]
+      #- create_infrastructure
+      #- configure_infrastructure:
+      #    requires: [create_infrastructure]
+      - smoke_test
