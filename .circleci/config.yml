@@ -135,8 +135,7 @@ jobs:
             export OldBucketID=$(cat ~/textfile.txt)
             aws s3 rm "s3://${OldBucketID}" --recursive
 
-
-# Invoke jobs via workflows
+# Invoke jobs via workflows-
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
   promote-to-prod-workflow:
