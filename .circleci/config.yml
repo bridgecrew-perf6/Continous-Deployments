@@ -74,7 +74,7 @@ jobs:
       - run:
           name: Simulate Error
           command: |
-            return 1 #Simulates an error that causes job failure
+            return 1 #Simulates an error that causes job failure.
       - destroy_environment
 
 
