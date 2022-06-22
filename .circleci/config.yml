@@ -59,7 +59,7 @@ jobs:
             --template-file bucket.yml \
             --stack-name stack-create-bucket-${CIRCLE_WORKFLOW_ID:0:7} \
             --parameter-overrides MyBucketName="my-${CIRCLE_WORKFLOW_ID:0:7}-bucket"
-      - run: aws s3 sync ./index.html s3://my-${CIRCLE_WORKFLOW_ID:0:7}-bucket --delete
+      - run: aws s3 sync . s3://my-${CIRCLE_WORKFLOW_ID:0:7}-bucket --delete
 
   configure_infrastructure:
     docker:
